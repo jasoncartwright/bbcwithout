@@ -55,7 +55,7 @@ class MainHandler(webapp2.RequestHandler):
                 # Remove containers containing blacklisted words
                 for blacklist_word in blacklist_words:
                     if blacklist_word:
-                        mentions = soup.findAll(text=re.compile(blacklist_word))
+                        mentions = soup.findAll(text=re.compile(blacklist_word, re.IGNORECASE))
 
                         for mention in mentions:
                             mention.parent.parent.extract()
