@@ -1,4 +1,5 @@
 import webapp2, re, os
+import logging
 
 from google.appengine.api import urlfetch
 from google.appengine.ext.webapp import template
@@ -7,6 +8,8 @@ import BeautifulSoup
 from BeautifulSoup import Comment
 
 BBC_URL = "http://www.bbc.co.uk"
+
+PROTECTED_ELEMENTS = ["body", "html", "[document]", "head"]
 
 class MainHandler(webapp2.RequestHandler):
 
@@ -58,8 +61,13 @@ class MainHandler(webapp2.RequestHandler):
                         mentions = soup.findAll(text=re.compile(blacklist_word, re.IGNORECASE))
 
                         for mention in mentions:
-                            mention.parent.parent.extract()
-
+                            try:
+                                gp = mention.parent.parent
+                                if gp.name in PROTECTED_ELEMENTS:
+                                    continue
+                                gp.extract()
+                            except AttributeError:
+                                pass
                 self.response.out.write(soup)
 
         else:
@@ -70,3 +78,4 @@ class MainHandler(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([('/.*', MainHandler)], debug=True)
+
